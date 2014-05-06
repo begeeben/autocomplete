@@ -48,6 +48,19 @@
         return modulesCache[name];
     }
 
+    // shallow extend
+    circular.extend = function (target, source) {
+        // check if source is a object
+        // if ()
+        for (var prop in source) {
+            if (source.hasOwnProperty(prop) && !target[prop]) {
+                target[prop] = source[prop];
+            }
+        }
+
+        return target;
+    };
+
     circular.Module = function() {
         var args, moduleName, injections;
 
