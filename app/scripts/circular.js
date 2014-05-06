@@ -74,19 +74,27 @@
         var q = {};
 
         var Promise = function() {
-            this.successCallbacks = [];
-            this.failedCallbacks = [];
+            this.successCallback = null;
+            this.failedCallback = null;
         };
 
         Promise.prototype = {
-            successCallbacks: null,
-            failedCallbacks: null,
+            // successCallback: null,
+            // failedCallback: null,
             then: function(successCallback, failedCallback) {
-                // impplement input check later
-                this.successCallbacks.push(successCallback);
-                if (this.failedCallback) {
-                    this.failedCallbacks.push(failedCallback);
-                }
+                var deferred = new Defer();
+                // // implement input check later
+                this.successCallback = function (data) {
+                    deferred.resolve(successCallback(data));
+                };
+
+                // if (this.failedCallback) {
+                this.failedCallback = function (error) {
+                    deferred.reject(failedCallback(error));
+                };
+                // }
+
+                return deferred.promise;
             }
         };
 
@@ -97,19 +105,25 @@
         Defer.prototype = {
             promise: null,
             resolve: function(data) {
-                this.promise.successCallbacks.forEach(function(callback) {
-                    window.setTimeout(function() {
-                        callback(data);
-                    }, 0);
-                });
+                // this.promise.successCallbacks.forEach(function(callback) {
+                //     window.setTimeout(function() {
+                //         callback(data);
+                //     }, 0);
+                // });
+                if (typeof this.promise.successCallback === 'function') {
+                    this.promise.successCallback(data);
+                }
             },
 
             reject: function(error) {
-                this.promise.failedCallbacks.forEach(function(callback) {
-                    window.setTimeout(function() {
-                        callback(error);
-                    }, 0);
-                });
+                // this.promise.failedCallbacks.forEach(function(callback) {
+                //     window.setTimeout(function() {
+                //         callback(error);
+                //     }, 0);
+                // });
+                if (typeof this.promise.failedCallback === 'function') {
+                    this.promise.failedCallback(error);
+                }
             }
         };
 
