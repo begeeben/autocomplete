@@ -39,7 +39,7 @@
         if (modules[name]) {
             callback = modules[name].pop();
 
-            for (var i = modules[name].length - 1; i >= 0; i--) {
+            for (var i = 0; i < modules[name].length; i++) {
                 dependencies.push(getModule(modules[name][i]));
             }
         }
