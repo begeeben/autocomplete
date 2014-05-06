@@ -23,3 +23,4 @@ circular.Module('ajax')({url: 'dataset/tz.json', async: true})
 	console.log(data);
 });
 
+circular.Module('ajax')({url: 'modules/circular.autocomplete.html'});

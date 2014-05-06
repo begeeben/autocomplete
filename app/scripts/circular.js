@@ -138,10 +138,15 @@
         var ajax = function (options) {
             var deferred = q.defer();
 
+            options = circular.extend(options, {async: true});
+
             function reqListener() {
-                var parsed = JSON.parse(this.responseText);
-                console.log(parsed);
-                deferred.resolve(parsed);
+                var data = this.responseText;
+                if (this.getResponseHeader('content-type') === 'application/json') {
+                    data = JSON.parse(this.responseText);
+                }
+                console.log(data);
+                deferred.resolve(data);
             }
 
             var oReq = new XMLHttpRequest();
