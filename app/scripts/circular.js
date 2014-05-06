@@ -7,8 +7,8 @@
 'use strict';
 
 /**
- *  Usage:
- *      circular.Module('newModule', ['ajax', 'repeater', function (ajax, repeater) {
+ *  Usage Example:
+ *      circular.Module('newModule', ['ajax', function (ajax) {
  *          return {
  *              run: function() {}   
  *          };
@@ -61,6 +61,7 @@
         return target;
     };
 
+    // module getter/setter
     circular.Module = function() {
         var args, moduleName, injections;
 
