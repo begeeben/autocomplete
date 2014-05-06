@@ -60,18 +60,21 @@
 }
 
 .cc-suggestions {
+	background-color: #fff;
 	position: absolute;
 	border: 1px solid #999;
 	border-radius: 3px;
 }
 
 .cc-suggestions .cc-suggestion {
-	background-color: #dfdfdf;
+	background-color: #f4f4f4;
 	border-radius: 3px;
 	margin: 5px;
 	padding: 5px;
+	color: #666;
 }
 
 .cc-suggestions .cc-suggestion:hover {
-	background-color: #f4f4f4;
+	background-color: #dfdfdf;
+	cursor: pointer;
 }
