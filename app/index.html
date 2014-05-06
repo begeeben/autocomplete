@@ -12,6 +12,7 @@
         <!-- endbower -->
         <!-- endbuild -->
         <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="modules/circular.autocomplete.css">
         <link rel="stylesheet" href="styles/main.css">
         <!-- endbuild -->
     </head>
@@ -21,14 +22,30 @@
         <![endif]-->
 
 
-        <div class="hero-unit">
-          <h1>'Allo, 'Allo!</h1>
-          <p>You now have</p>
-          <ul>
-            <li>HTML5 Boilerplate</li>
-
-
-          </ul>
+        <div class="cc-autocomplete">
+            <div class="cc-input">
+                <!-- <input> -->
+                <div class="cc-autofill">
+                    <span class="cc-autofill-span">
+                        <div class="cc-autofill-text">suggestion</div>
+                        <div class="cc-autofill-remove">x</div>
+                    </span>
+                    <input name="to" type="hidden" value="suggestion">
+                </div>
+                <div class="cc-autofill">
+                    <span class="cc-autofill-span">
+                        <div class="cc-autofill-text">suggestion</div>
+                        <div class="cc-autofill-remove">x</div>
+                    </span>
+                    <input name="to" type="hidden" value="suggestion">
+                </div>
+                <textarea name="to" id="" class="cc-textarea" spellcheck="false" autocomplete="false" autocapitalize="off" autocorrect="off"></textarea>
+            </div>
+            <div class="cc-suggestions is-hidden">
+                <div class="cc-suggestion">suggestion</div>
+                <div class="cc-suggestion">suggestion</div>
+                <div class="cc-suggestion">suggestion</div>
+            </div>
         </div>
 
 

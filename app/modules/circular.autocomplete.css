@@ -1,0 +1,71 @@
+.is-hidden {
+	display: none;
+}
+
+.cc-autocomplete {
+	position: relative;
+}
+
+.cc-autocomplete .cc-input {
+	border: 1px solid #999;
+	padding: 2px;
+}
+
+.cc-autocomplete .cc-input .cc-autofill {
+	display: inline-block;
+	border: 1px solid #ccc;
+	padding: 3px;
+	background-color: #dddddd;
+	vertical-align: middle;
+}
+
+.cc-autocomplete .cc-input .cc-autofill:hover {
+	background-color: #f4f4f4;
+}
+
+.cc-autocomplete .cc-input .cc-autofill-span {
+	display: block;
+}
+
+.cc-autocomplete .cc-input .cc-autofill-text {
+	display: inline-block;
+}
+
+.cc-autocomplete .cc-input .cc-autofill-remove {
+	display: inline-block;
+	margin: 2px;
+	/*font-size: 1.2rem;*/
+	color: #999;
+}
+
+.cc-autocomplete .cc-input .cc-autofill-remove:hover {
+	cursor: pointer;
+}
+
+.cc-autocomplete .cc-input .cc-textarea {
+	height: 1rem;
+	font-size: .8rem;
+	border: 0;
+	margin: 0;
+	padding: 6px;
+	background-color: #f6f6f6;
+	outline: none;
+	resize: none;
+	overflow: hidden;
+	vertical-align: middle;
+}
+
+.cc-autocomplete .cc-suggestions {
+	position: absolute;
+	border: 1px solid #999;
+}
+
+.cc-autocomplete .cc-suggestions .cc-suggestion {
+	background-color: #dfdfdf;
+	margin: 5px;
+	padding: 5px;
+}
+
+.cc-autocomplete .cc-suggestions .cc-suggestion:hover {
+	background-color: #f4f4f4;
+}
