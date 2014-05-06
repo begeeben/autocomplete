@@ -32,56 +32,6 @@ circular.Module('autocompleteSource', ['q', 'ajax', function (q, ajax) {
     return autocompleteSource;
 }]);
 
-// // autocomplete view handler
-// // handles 
-// circular.Module('autocompleteView', ['ajax', function () {
-//     var autocompleteView = {};
-//     // // root autocomplete DOM elements
-//     // var roots = {};
-//     var autofillDom;
-//     var suggestionDom;
-//     var suggestionListDom;
-//     var parser = new DOMParser();
-
-//     function getPlainTextTemplate (options) {
-//         return ajax({});
-//     }
-
-//     function parseDom (htmlPlainText) {
-//         var doc = parser.parseFromString(htmlPlainText, "text/html");
-
-//         autofillDom = doc.querySelector('.cc-autofill');
-//         suggestionDom = doc.querySelector('.cc-suggestion');
-//         suggestionListDom = doc.querySelector('.cc-suggestions');
-//     }
-
-//     function removeSuggestions (root) {
-
-//     }
-
-//     autocompleteView.init = function (options) {
-
-//         getPlainTextTemplate(options).then(function (data) {
-//             parseDom(data);
-
-//             // get root Dom element
-//             // roots[options.selector] = ...
-
-//             // append initial widget dom elements
-
-//             // cache dynamic dom elements
-
-//             // return root element
-//         });
-//     };
-
-//     autocompleteView.appendSuggestions = function (root) {
-
-//     };
-
-//     return autocompleteView;
-// }]);
-
 // main autocomplete widget module
 // keeps track of every autocomplete dom elements and input events
 circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, autocompleteSource) {
