@@ -173,17 +173,83 @@
         return ajax;
     }]);
 
-    circular.Module('repeater', [function () {
-        var repeater = {};
+    circular.Module('autocompleteSource', ['q', 'ajax', function (q, ajax) {
+        var autocompleteSource = {};
+        var cache = {};
 
-        repeater.constructDom = function (data) {
+        function getSource (options) {
+            var deferred = q.defer();
+
+            // options = circular.extend(options, {cache: true});
+
+            if (options.cache && cache[options.url]) {
+                deferred.resolve(cache[options.url]);
+            } else {
+                ajax({url: options.url}).then(function(data) {
+                    deferred.resolve(data);
+                    cache[options.url] = data;
+                });
+            }
+
+            return deferred.promise;
+        }
+
+        autocompleteSource.getSuggestions = function (options) {
+            options = circular.extend(options, {maxSuggestions: 10, cache: true});
+
+            return getSource(options).then(function(data) {
+
+            });
+        };
+
+        return autocompleteSource;
+    }]);
+
+    // autocomplete view handler
+    // handles 
+    circular.Module('autocompleteView', ['ajax', function () {
+        var autocompleteView = {};
+        // // root autocomplete DOM elements
+        // var roots = {};
+        var autofillDom;
+        var suggestionDom;
+        var suggestionListDom;
+        var parser = new DOMParser();
+
+        function getPlainTextTemplate (options) {
+            return ajax({});
+        }
+
+        function parseDom (htmlPlainText) {
+            var doc = parser.parseFromString(htmlPlainText, "text/html");
+
+            autofillDom = doc.querySelector('.cc-autofill');
+            suggestionDom = doc.querySelector('.cc-suggestion');
+            suggestionListDom = doc.querySelector('.cc-suggestions');
+        }
+
+        autocompleteView.init = function (options) {
+
+            getPlainTextTemplate(options).then(function (data) {
+                parseDom(data);
+
+                // get root Dom element
+                // roots[options.selector] = ...
+
+                // append initial widget dom elements
+
+                // cache dynamic dom elements
+
+                // return root element
+            });
+        };
+
+        autocompleteView.appendSuggestions = function (data) {
 
         };
 
-        return repeater;
+        return autocompleteView;
     }]);
-
-    circular.Module('autocomplete', ['ajax', 'repeater', function (ajax, repeater) {
 
         var autocomplete = {};
 
