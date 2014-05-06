@@ -81,6 +81,24 @@
         }
     };
 
+    circular.getY = function (element, container) {
+        var y = 0;
+        while (element && element !== container) {
+            y += element.offsetTop;
+            element = element.offsetParent;
+        }
+        return y;
+    };
+
+    circular.getX = function (element, container) {
+        var x = 0;
+        while (element && element !== container) {
+            x += element.offsetLeft;
+            element = element.offsetParent;
+        }
+        return x;
+    };
+
     // shallow extend
     circular.extend = function (target, source) {
         // check if source is a object
@@ -192,7 +210,7 @@
                 if (this.getResponseHeader('content-type') === 'application/json') {
                     data = JSON.parse(this.responseText);
                 }
-                console.log(data);
+                // console.log(data);
                 deferred.resolve(data);
             }
 
