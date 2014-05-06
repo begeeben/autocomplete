@@ -25,7 +25,7 @@ circular.Module('autocompleteSource', ['q', 'ajax', function (q, ajax) {
         // options = circular.extend(options, {maxSuggestions: 10, cache: true});
 
         return getSource(options).then(function(data) {
-
+            // filter suggestions according to input
         });
     };
 
@@ -59,11 +59,17 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         suggestionDom = doc.querySelector('.cc-suggestion');
         suggestionListDom = doc.querySelector('.cc-suggestions');
 
-        console.log(doc);
-        console.log(inputDom);
-        console.log(autofillDom);
-        console.log(suggestionDom);
-        console.log(suggestionListDom);
+        inputDom.removeChild(autofillDom);
+        suggestionListDom.removeChild(suggestionDom);
+        // console.log(doc);
+        // console.log(inputDom);
+        // console.log(autofillDom);
+        // console.log(suggestionDom);
+        // console.log(suggestionListDom);
+
+        suggestionListDom.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
     }
 
     function removeSuggestions () {
@@ -80,13 +86,29 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
     }
 
+    function showSuggestions() {
+        if (suggestionListDom) {
+            // move it just below the relative input
+            var x = circular.getX(this.textarea, document.body);
+            var y = circular.getY(this.textarea, document.body);
+
+            suggestionListDom.style.top = y + 28 + 'px';
+            suggestionListDom.style.left = x + 5 + 'px';
+
+            circular.removeClass(suggestionListDom, 'is-hidden');
+        }
+    }
+
     // character input event handler
     function onInput() {
 
+        // circular.removeClass(suggestionListDom, 'is-hidden');
+        showSuggestions.bind(this)();
 
-        getSuggestions(options).then(function(data) {
-            appendSuggestions(data);
-        });
+        // update suggestion list
+        // getSuggestions(options).then(function(data) {
+        //     appendSuggestions(data);
+        // });
     }
 
     // submit event handler
@@ -96,24 +118,35 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     function validateInput() {}
 
     var View = function (options) {
+        var self = this;
         // Dom caches
         this.root = null;
-        this.autofill = null;
+        this.inputDom = null;
         this.textarea = null;
-        this.suggestionList = null;
+        // this.suggestionList = null;
 
         this.options = circular.extend(options, {maxSuggestions: 10, cache: true});
 
         this.root = document.querySelector(options.selector);
+        this.inputDom = inputDom.cloneNode(true);
+        this.textarea = this.inputDom.querySelector('.cc-textarea');
         circular.addClass(this.root, 'cc-autocomplete');
-        this.root.appendChild(inputDom.cloneNode(true));
-        this.root.appendChild(suggestionListDom.cloneNode(true));
+        this.root.appendChild(this.inputDom);
+
 
         // get root Dom element
         // roots[options.selector] = ...
         // append initial widget dom elements
 
-        // this.textarea.addEventListener('', onInput);
+        this.textarea.addEventListener('keydown', onInput.bind(this));
+        this.textarea.addEventListener('click', function (event) {
+            if (self.textarea.value.trim()) {
+                // update suggestion list
+
+                showSuggestions.bind(self)();
+                event.stopPropagation();
+            }
+        });
     };
 
     View.prototype = {
@@ -139,8 +172,24 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         // check if the selector or element has been used
 
         // maybe cache some dataset first
-        templatePromise.then(function() {
+
+        // check if template has been loaded
+        if (inputDom) {
             autocompleteList[options.selector] = new View(options);
+            templatePromise = null;
+        } else {
+            templatePromise = templatePromise.then(function() {
+                autocompleteList[options.selector] = new View(options);
+
+                if (!document.querySelector('.cc-suggestions')) {
+                    document.body.appendChild(suggestionListDom);
+                }
+                    
+            });
+        }
+
+        document.addEventListener('click', function() {
+            circular.addClass(suggestionListDom, 'is-hidden');
         });
             
     };
