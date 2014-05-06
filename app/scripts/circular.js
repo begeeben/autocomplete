@@ -48,23 +48,23 @@
         return modulesCache[name];
     }
 
-    function addClass(el, className) {
+    circular.addClass = function (el, className) {
         if (el.classList) {
             el.classList.add(className);
         } else {
             el.className += ' ' + className;
         }
-    }
+    };
 
-    function removeClass(el, className) {
+    circular.removeClass = function (el, className) {
         if (el.classList) {
             el.classList.remove(className);
         } else {
             el.className = el.className.replace(new RegExp('(^|\\b)' + className.split(' ').join('|') + '(\\b|$)', 'gi'), ' ');
         }
-    }
+    };
 
-    function toggleClass(el, className) {
+    circular.toggleClass = function (el, className) {
         if (el.classList) {
             el.classList.toggle(className);
         } else {
@@ -79,7 +79,7 @@
 
             el.className = classes.join(' ');
         }
-    }
+    };
 
     // shallow extend
     circular.extend = function (target, source) {
