@@ -10,7 +10,82 @@
 
 'use strict';
 
-circular.Module('autocompleteSource', ['q', 'ajax', function (q, ajax) {
+// consider to extract the dataset conversion logic out and make it accept a mapping callback for different input formats
+
+// Regex based string matching, test plaintext directly using Regex
+circular.Module('regexMatcher', [function () {
+    var Matcher = function (options) {
+        var tempArray;
+        options = circular.extend(options, {maxResult: 10});
+
+        this.plaintext = options.plaintext;
+        // convert the plaintext to array
+        // sort the array
+        // convert it back to plaintext
+        tempArray = JSON.parse(this.plaintext);
+        // sort the array
+        tempArray.sort();
+        this.plaintext = tempArray.join('"');
+    };
+
+    Matcher.prototype = {
+        getMatches: function (queryString) {
+            var substrRegex = new RegExp(queryString, 'gi');
+            var matches = this.plaintext.match(substrRegex);
+
+            return matches;
+        }
+    };
+
+    return {
+        create: function (options) {
+            return new Matcher(options);
+        }
+    };
+}]);
+
+// loop based string matching, less memory space required than the trie based one
+circular.Module('loopMatcher', [function() {
+    var Matcher = function (options) {
+        options = circular.extend(options, {maxResult: 10});
+
+        this.plaintext = options.plaintext;
+        this.sourceArray = JSON.parse(this.plaintext);
+        // sort the array
+        this.sourceArray.sort();
+    };
+
+    Matcher.prototype = {
+        getMatches: function (queryString) {
+            var substrRegex = new RegExp(queryString, 'gi');
+            var matches = [];
+            var sourceArray = this.sourceArray;
+
+            for (var i=0; i<sourceArray.length; i++) {
+                if (substrRegex.test(sourceArray[i])) {
+                    matches.push(sourceArray[i]);
+                }
+            }
+
+            return matches.length > 0 ? matches : null;
+        }
+    };
+
+    return {
+        create: function (options) {
+            return new Matcher(options);
+        }
+    };
+}]);
+
+// wonder if this solutions will out perform others: http://stackoverflow.com/a/679017
+// trie based string matching, requires more space, should be faster, write speed test later
+
+
+
+// although the module is designed to hold multiple suggestion sources
+// support for suggestions from multiple sources is TBC
+circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, ajax, matcher) {
     var autocompleteSource = {};
     var cache = {};
 
