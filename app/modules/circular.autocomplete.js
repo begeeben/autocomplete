@@ -16,7 +16,7 @@
 circular.Module('regexMatcher', [function () {
     var Matcher = function (options) {
         var tempArray;
-        options = circular.extend(options, {maxResult: 10});
+        this.options = circular.extend(options, {maxSuggestions: 10});
 
         this.plaintext = options.plaintext;
         // convert the plaintext to array
@@ -29,7 +29,7 @@ circular.Module('regexMatcher', [function () {
     };
 
     Matcher.prototype = {
-        getMatches: function (queryString) {
+        getMatches: function (queryString, max) {
             var substrRegex = new RegExp(queryString, 'gi');
             var matches = this.plaintext.match(substrRegex);
 
@@ -45,26 +45,33 @@ circular.Module('regexMatcher', [function () {
 }]);
 
 // loop based string matching, less memory space required than the trie based one
+// TBC:
+//      duplicates
+//      modify regex
 circular.Module('loopMatcher', [function() {
     var Matcher = function (options) {
-        options = circular.extend(options, {maxResult: 10});
+        this.options = circular.extend(options, {maxSuggestions: 10});
 
         this.plaintext = options.plaintext;
         this.sourceArray = JSON.parse(this.plaintext);
         // sort the array
         this.sourceArray.sort();
+        this.suggested = null;
     };
 
     Matcher.prototype = {
-        getMatches: function (queryString) {
+        getMatches: function (queryString, max) {
             var substrRegex = new RegExp(queryString, 'gi');
             var matches = [];
             var sourceArray = this.sourceArray;
 
-            for (var i=0; i<sourceArray.length; i++) {
+            var i = 0;
+            var max = max || this.options.maxSuggestions;
+            while (i<sourceArray.length && matches.length < max) {
                 if (substrRegex.test(sourceArray[i])) {
                     matches.push(sourceArray[i]);
                 }
+                i++;
             }
 
             return matches.length > 0 ? matches : null;
@@ -110,7 +117,7 @@ circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, 
 
     function getMatcher (options) {
         return getSource(options).then(function (data) {
-            matcherCache[options.url] = matcher.create({plaintext: data});
+            matcherCache[options.url] = matcher.create(circular.extend(options, {plaintext: data}));
 
             return matcherCache[options.url];
         });
@@ -135,17 +142,17 @@ circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, 
     // TBC
     autocompleteSource.addSource = function (options) {};
 
-    autocompleteSource.getSuggestions = function (queryString) {
+    autocompleteSource.getSuggestions = function (queryString, max) {
         var deferred = q.defer();
 
         if (matcherCache[defaultOptions.url]) {
             // console.log('resolve autocompleteSource.getSuggestions promise from cache');
-            deferred.resolve(matcherCache[defaultOptions.url].getMatches(queryString));
+            deferred.resolve(matcherCache[defaultOptions.url].getMatches(queryString, max));
         } else {
             // console.log('set sourcePromise then callback');
             sourcePromise.then(function (matcher) {
                 // console.log('resolve autocompleteSource.getSuggestions promise');
-                deferred.resolve(matcher.getMatches(queryString));
+                deferred.resolve(matcher.getMatches(queryString, max));
             });
         }
 
@@ -203,7 +210,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     // get autocomplete suggestions
     function getSuggestions(queryString) {
         var self = this;
-        autocompleteSource.getSuggestions(queryString).then(function (data) {
+        autocompleteSource.getSuggestions(queryString, this.options.maxSuggestions).then(function (data) {
             updateSuggestions.bind(self)(data);
         });
     }
@@ -269,7 +276,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     }
 
     function onInput(event) {
-        getSuggestions.bind(this)(this.textarea.value);
+        if (this.textarea.value.trim()) {
+            getSuggestions.bind(this)(this.textarea.value);
+        } else {
+            circular.addClass(suggestionListDom, 'is-hidden');
+        }        
     }
 
     // character input event handler
