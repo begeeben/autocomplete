@@ -1,3 +1,13 @@
+/**
+ *  Author: Yi Fan Liao
+ *  Date: 2014/5/6
+ *  Description: Autocomplete modules
+ *
+ *  currently the query for suggestions is performed for the whole text in the textarea
+ *  to further enhance performance, queries for suggestions should be able to be performed on the last query
+ *  
+ */
+
 'use strict';
 
 circular.Module('autocompleteSource', ['q', 'ajax', function (q, ajax) {
