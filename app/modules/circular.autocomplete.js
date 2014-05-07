@@ -159,7 +159,8 @@ circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, 
 }]);
 
 // main autocomplete widget module
-// keeps track of every autocomplete dom elements and input events
+// load autocomplete template
+// keeps track of every autocomplete dom elements and events
 circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, autocompleteSource) {
 
     var autocomplete = {};
@@ -200,7 +201,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     }
 
     // get autocomplete suggestions
-    // there's a bug in q module
     function getSuggestions(queryString) {
         var self = this;
         autocompleteSource.getSuggestions(queryString).then(function (data) {
@@ -254,13 +254,17 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
             // update textarea width
             self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
+            self.textarea.focus();
             // remove autofill
             self.inputDom.removeChild(node);
+            showSuggestions.bind(self)();
+            event.stopPropagation();
         });
         this.inputDom.insertBefore(node, this.textarea);
         // update textarea width
         this.textarea.style.width = this.textarea.offsetWidth - node.offsetWidth - parseInt(getComputedStyle(node).marginLeft) - parseInt(getComputedStyle(node).marginRight) + 'px';
         this.textarea.value = '';
+        this.textarea.focus();
         circular.addClass(suggestionListDom, 'is-hidden');
     }
 
