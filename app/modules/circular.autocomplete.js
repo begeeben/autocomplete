@@ -252,9 +252,14 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         var node = autofillDom.cloneNode(true);
         node.querySelector('.cc-autofill-text').innerHTML = value;
         node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
+            // update textarea width
+            self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
+            // remove autofill
             self.inputDom.removeChild(node);
         });
         this.inputDom.insertBefore(node, this.textarea);
+        // update textarea width
+        this.textarea.style.width = this.textarea.offsetWidth - node.offsetWidth - parseInt(getComputedStyle(node).marginLeft) - parseInt(getComputedStyle(node).marginRight) + 'px';
         this.textarea.value = '';
         circular.addClass(suggestionListDom, 'is-hidden');
     }
@@ -348,10 +353,10 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         });
     };
 
-    View.prototype = {
-        insertSuggestion: function () {},
-        updateSuggestionList: function () {}
-    };
+    // View.prototype = {
+    //     insertSuggestion: function () {},
+    //     updateSuggestionList: function () {}
+    // };
 
     // cache dom before usage
     var templatePromise = getPlainTextTemplate({url: 'modules/circular.autocomplete.html'}).then(function (data) {
