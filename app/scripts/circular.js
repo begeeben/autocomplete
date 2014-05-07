@@ -1,7 +1,7 @@
 /**
  *  Author: Yi Fan Liao
  *  Date: 2014/5/5
- *  Description: A simple sandbox pattern tryout for an autocomplete widget. Use DI concept to make the code reusable and testable.
+ *  Description: A simple sandbox pattern tryout for building modular apps. Use DI concept to make the code reusable and testable.
  */
 
 'use strict';
@@ -25,7 +25,9 @@
 (function(window, document, undefined) {
 
     var circular = window.circular || (window.circular = {});
+    // key value pairs of module definitions
     var modules = {};
+    // run time module instances
     var modulesCache = {};
 
     function getModule(name) {
@@ -102,7 +104,8 @@
     // shallow extend
     circular.extend = function (target, source) {
         // check if source is a object
-        // if ()
+        target = target || {};
+
         for (var prop in source) {
             if (source.hasOwnProperty(prop) && !target[prop]) {
                 target[prop] = source[prop];
@@ -135,66 +138,53 @@
         modules[moduleName] = injections;
     };
 
+    // have to check if this simple q implementation follows the Promise/A+ spec
     circular.Module('q', [function () {
         var q = {};
 
-        var Promise = function() {
-            this.successCallback = null;
-            this.failedCallback = null;
-        };
+        function defer() {
+            var callbacks = [];
+            var resolved;
+            // var error;
 
-        Promise.prototype = {
-            // successCallback: null,
-            // failedCallback: null,
-            then: function(successCallback, failedCallback) {
-                var deferred = new Defer();
-                // // implement input check later
-                this.successCallback = function (data) {
-                    deferred.resolve(successCallback(data));
-                };
+            return {
+                resolve: function (data) {
+                    resolved = data;
 
-                // if (this.failedCallback) {
-                this.failedCallback = function (error) {
-                    deferred.reject(failedCallback(error));
-                };
-                // }
+                    if (callbacks) {
+                        for (var i=0; i<callbacks.length; i++) {
+                            callbacks[i][0](resolved);
+                        }
 
-                return deferred.promise;
-            }
-        };
+                        callbacks = undefined;
+                    }
+                },
+                reject: function (error) {
 
-        var Defer = function() {
-            this.promise = new Promise();
-        };
+                },
+                promise: {
+                    then: function (onSuccess, onError) {
+                        var deferred = defer();
 
-        Defer.prototype = {
-            promise: null,
-            resolve: function(data) {
-                // this.promise.successCallbacks.forEach(function(callback) {
-                //     window.setTimeout(function() {
-                //         callback(data);
-                //     }, 0);
-                // });
-                if (typeof this.promise.successCallback === 'function') {
-                    this.promise.successCallback(data);
+                        if (callbacks) {
+                            callbacks.push([function (resolved) {
+                                deferred.resolve(onSuccess(resolved));
+                            }, function (error) {
+                                deferred.reject(onError(error));
+                            }]);
+                        // } else if (error) {
+
+                        } else {
+                            deferred.resolve(onSuccess(resolved));
+                        }
+
+                        return deferred.promise;
+                    }
                 }
-            },
+            };
+        }
 
-            reject: function(error) {
-                // this.promise.failedCallbacks.forEach(function(callback) {
-                //     window.setTimeout(function() {
-                //         callback(error);
-                //     }, 0);
-                // });
-                if (typeof this.promise.failedCallback === 'function') {
-                    this.promise.failedCallback(error);
-                }
-            }
-        };
-
-        q.defer = function () {
-            return new Defer();
-        };
+        q.defer = defer;
 
         return q;
     }]);
