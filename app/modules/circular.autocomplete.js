@@ -165,7 +165,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     var autocomplete = {};
     // all autocomplete objects
     var autocompleteList = {};
-
+    // dom template cache
     var inputDom;
     var autofillDom;
     var suggestionDom;
@@ -173,6 +173,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
     var parser = new DOMParser();
 
+    // should find a way for specifying the template url for async loading
+    // or use build tool to integrate the html template in the javascript
     function getPlainTextTemplate (options) {
         return ajax({url: options.url});
     }
@@ -187,11 +189,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         inputDom.removeChild(autofillDom);
         suggestionListDom.removeChild(suggestionDom);
-        // console.log(doc);
-        // console.log(inputDom);
-        // console.log(autofillDom);
-        // console.log(suggestionDom);
-        // console.log(suggestionListDom);
 
         suggestionListDom.addEventListener('click', function (event) {
             event.stopPropagation();
@@ -203,13 +200,37 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     }
 
     // get autocomplete suggestions
-    function getSuggestions(options) {
-        return autocompleteSource.getSuggestions(options);
+    // there's a bug in q module
+    function getSuggestions(queryString) {
+        var self = this;
+        autocompleteSource.getSuggestions(queryString).then(function (data) {
+            updateSuggestions.bind(self)(data);
+        });
     }
 
     // append suggestions onto the widget
-    function appendSuggestions(data) {
+    function updateSuggestions(data) {
+        var self = this;
+        var node;
+        // clear suggestions
+        suggestionListDom.innerHTML = '';
 
+        // clone suggestion doms
+        if (data) {
+            for (var i=0, len=data.length; i<len; i++) {
+                node = suggestionDom.cloneNode(true);
+                node.innerHTML = data[i];
+                node.addEventListener('click', function (event) {
+                    insertSuggestion.bind(self)(event.target.innerHTML);
+                });
+                suggestionListDom.appendChild(node);
+            }
+            showSuggestions.bind(self)();
+        } else {
+            circular.addClass(suggestionListDom, 'is-hidden');
+            
+        // append to suggestion list
+        }
     }
 
     function showSuggestions() {
@@ -225,16 +246,67 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         }
     }
 
+    // fill the value on the left hand side of the textarea
+    function insertSuggestion(value) {
+        var self = this;
+        var node = autofillDom.cloneNode(true);
+        node.querySelector('.cc-autofill-text').innerHTML = value;
+        node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
+            self.inputDom.removeChild(node);
+        });
+        this.inputDom.insertBefore(node, this.textarea);
+        this.textarea.value = '';
+        circular.addClass(suggestionListDom, 'is-hidden');
+    }
+
+    function onInput(event) {
+        getSuggestions.bind(this)(this.textarea.value);
+    }
+
     // character input event handler
-    function onInput() {
+    //
+    // should be called using onKeypress.bind(this)()
+    //      guess this make it harder to read and maintain in the future...
+    //      read: http://stackoverflow.com/a/7688882/1400167
+    function onKeypress(event) {
+        // var queryString = this.textarea.value;
+        var key = event.keyCode || event.which;
+        this.queryString += String.fromCharCode(key);
+
+        // console.log(key);
+        // console.log(String.fromCharCode(key));
+        console.log(this.queryString);
+        console.log(document.querySelectorAll('.cc-textarea')[1].value);
+        // if (event.which) {
+        //     console.log()
+        // }
+
+        // update suggestion list
+        getSuggestions(this.queryString).then(function(data) {
+            console.log(data);
+            // appendSuggestions(data);
+        });
 
         // circular.removeClass(suggestionListDom, 'is-hidden');
         showSuggestions.bind(this)();
+    }
 
-        // update suggestion list
-        // getSuggestions(options).then(function(data) {
-        //     appendSuggestions(data);
-        // });
+    // handle backspace and delete
+    function onKeydown(event) {
+        var key = event.keyCode || event.which;
+        // console.log(key);
+        // console.log(String.fromCharCode(key));
+
+        if (key === 8) {
+            // backspace pressed
+            this.queryString = this.queryString.substr(0, this.queryString.length-1);
+            console.log(this.queryString);
+            console.log(document.querySelectorAll('.cc-textarea')[1].value);
+        } else if (key === 46) {
+            // delete pressed
+            console.log(this.queryString);
+        }
+
     }
 
     // submit event handler
@@ -249,27 +321,28 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.root = null;
         this.inputDom = null;
         this.textarea = null;
-        // this.suggestionList = null;
+        this.queryString = '';
 
         this.options = circular.extend(options, {maxSuggestions: 10, cache: true});
 
+        // get root Dom element
         this.root = document.querySelector(options.selector);
         this.inputDom = inputDom.cloneNode(true);
         this.textarea = this.inputDom.querySelector('.cc-textarea');
+        // calculate textarea size
+
         circular.addClass(this.root, 'cc-autocomplete');
+        // append initial widget dom elements
         this.root.appendChild(this.inputDom);
 
-
-        // get root Dom element
-        // roots[options.selector] = ...
-        // append initial widget dom elements
-
-        this.textarea.addEventListener('keydown', onInput.bind(this));
+        this.textarea.addEventListener('input', onInput.bind(this));
+        // this.textarea.addEventListener('keypress', onKeypress.bind(this));
+        // this.textarea.addEventListener('keydown', onKeydown.bind(this));
         this.textarea.addEventListener('click', function (event) {
             if (self.textarea.value.trim()) {
                 // update suggestion list
-
-                showSuggestions.bind(self)();
+                getSuggestions.bind(self)(self.textarea.value);
+                // showSuggestions.bind(self)();
                 event.stopPropagation();
             }
         });
@@ -293,9 +366,9 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             throw 'please specify element selector for the autocomplete widget';
         }
 
-        // support multiple elements initialization later
+        // support selector for multiple elements initialization later
 
-        // check if the selector or element has been used
+        // check if the selector or element has been initialized
 
         // maybe cache some dataset first
 
@@ -313,12 +386,14 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     
             });
         }
-
-        document.addEventListener('click', function() {
-            circular.addClass(suggestionListDom, 'is-hidden');
-        });
             
     };
+
+    document.addEventListener('click', function() {
+        if (suggestionListDom) {
+            circular.addClass(suggestionListDom, 'is-hidden');
+        }
+    });
 
     return autocomplete;
 }]);
