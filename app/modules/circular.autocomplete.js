@@ -87,32 +87,73 @@ circular.Module('loopMatcher', [function() {
 // support for suggestions from multiple sources is TBC
 circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, ajax, matcher) {
     var autocompleteSource = {};
+    var defaultOptions = {url: 'dataset/tz.json', maxSuggestions: 10, cache: true};
+    // ajax cache... should be moved to ajax module later
     var cache = {};
+    // cache of every matcher for each dataset source
+    var matcherCache = {};
 
     function getSource (options) {
         var deferred = q.defer();
-
-        // options = circular.extend(options, {cache: true});
 
         if (options.cache && cache[options.url]) {
             deferred.resolve(cache[options.url]);
         } else {
             ajax({url: options.url}).then(function(data) {
-                deferred.resolve(data);
                 cache[options.url] = data;
+                deferred.resolve(data);
             });
         }
 
         return deferred.promise;
     }
 
-    autocompleteSource.getSuggestions = function (options) {
-        // options = circular.extend(options, {maxSuggestions: 10, cache: true});
+    function getMatcher (options) {
+        return getSource(options).then(function (data) {
+            matcherCache[options.url] = matcher.create({plaintext: data});
 
-        return getSource(options).then(function(data) {
-            // filter suggestions according to input
+            return matcherCache[options.url];
         });
+    }
+
+    autocompleteSource.init = function (options) {
+        options = circular.extend(options, defaultOptions);
+
+        if (!matcherCache[options.url]) {
+            if (sourcePromise) {
+                sourcePromise = sourcePromise.then(function (matcher) {
+                    if (!matcherCache[options.url]) {
+                        getMatcher(options);
+                    }
+                });
+            } else {
+                sourcePromise = getMatcher(options);
+            }
+        }
     };
+
+    // TBC
+    autocompleteSource.addSource = function (options) {};
+
+    autocompleteSource.getSuggestions = function (queryString) {
+        var deferred = q.defer();
+
+        if (matcherCache[defaultOptions.url]) {
+            // console.log('resolve autocompleteSource.getSuggestions promise from cache');
+            deferred.resolve(matcherCache[defaultOptions.url].getMatches(queryString));
+        } else {
+            // console.log('set sourcePromise then callback');
+            sourcePromise.then(function (matcher) {
+                // console.log('resolve autocompleteSource.getSuggestions promise');
+                deferred.resolve(matcher.getMatches(queryString));
+            });
+        }
+
+        return deferred.promise;
+    };
+
+    // preload default source
+    var sourcePromise = getMatcher(defaultOptions);
 
     return autocompleteSource;
 }]);
