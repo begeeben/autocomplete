@@ -222,24 +222,25 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         // clear suggestions
         suggestionListDom.innerHTML = '';
 
-        // clone suggestion doms
         if (data) {
             for (var i=0, len=data.length; i<len; i++) {
+                // clone suggestion dom
                 node = suggestionDom.cloneNode(true);
                 node.innerHTML = data[i];
                 node.addEventListener('click', function (event) {
                     insertSuggestion.bind(self)(event.target.innerHTML);
                 });
+                // append to suggestion list
                 suggestionListDom.appendChild(node);
             }
             showSuggestions.bind(self)();
         } else {
             circular.addClass(suggestionListDom, 'is-hidden');
             
-        // append to suggestion list
         }
     }
 
+    // need to check if the div is in the viewport later
     function showSuggestions() {
         if (suggestionListDom) {
             // move it just below the relative input
@@ -264,7 +265,9 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             self.textarea.focus();
             // remove autofill
             self.inputDom.removeChild(node);
-            showSuggestions.bind(self)();
+            if (self.textarea.value.trim()) {
+                showSuggestions.bind(self)();
+            }
             event.stopPropagation();
         });
         this.inputDom.insertBefore(node, this.textarea);
