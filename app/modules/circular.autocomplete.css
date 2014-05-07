@@ -5,6 +5,7 @@
 .cc-autocomplete {
 	position: relative;
 	margin: 5px;
+	width: 800px;
 }
 
 .cc-autocomplete .cc-input {
@@ -17,7 +18,8 @@
 	display: inline-block;
 	border: 1px solid #ccc;
 	border-radius: 3px;
-	padding: 3px;
+	margin: 0 2px;
+	padding: 2px;
 	background-color: #dddddd;
 	vertical-align: middle;
 }
@@ -47,7 +49,9 @@
 }
 
 .cc-autocomplete .cc-input .cc-textarea {
-	height: 1rem;
+	box-sizing: border-box;
+	width: 100%;
+	height: 30px;
 	font-size: .8rem;
 	border: 0;
 	margin: 0;
