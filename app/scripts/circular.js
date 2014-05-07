@@ -197,9 +197,9 @@
 
             function reqListener() {
                 var data = this.responseText;
-                if (this.getResponseHeader('content-type') === 'application/json') {
-                    data = JSON.parse(this.responseText);
-                }
+                // if (this.getResponseHeader('content-type') === 'application/json') {
+                //     data = JSON.parse(this.responseText);
+                // }
                 // console.log(data);
                 deferred.resolve(data);
             }
