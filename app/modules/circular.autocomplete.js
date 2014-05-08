@@ -432,6 +432,20 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         console.log(self.filled);
     }
 
+    function removeFilled(node) {
+        var self = this;
+        // update textarea width
+        self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
+        self.textarea.focus();
+        // remove autofill
+        self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
+        self.inputDom.removeChild(node);
+        if (self.textarea.value.trim()) {
+            // showSuggestions.bind(self)();
+            getSuggestions.bind(self)(self.textarea.value);
+        }
+    }
+
     function onInput(event) {
         // this.textarea.setCustomValidity('');
 
@@ -489,6 +503,13 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         // }
 
         switch (key) {
+            // backslash
+            case 8:
+                if (this.textarea.previousElementSibling && this.textarea.selectionStart === 0) {
+                    removeFilled.bind(this)(this.textarea.previousElementSibling);
+                    event.preventDefault();
+                }
+                break;
             // tab
             case 9:
                 if (value && suggestion && !value.match(new RegExp(suggestion, 'i'))) {
@@ -501,6 +522,22 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             case 13:
                 if (value && suggestion) {
                     insertSuggestion.bind(this)(suggestion);
+                }
+                event.preventDefault();
+                break;
+            // left
+            case 37:
+                if (this.textarea.previousElementSibling && this.textarea.selectionStart === 0) {
+                    this.textarea.previousElementSibling.focus();
+                    lastView = this;
+                }
+                break;
+            // down arrow
+            case 39:
+            case 40:
+                if (suggestion) {
+                    suggestionListDom.querySelector('.cc-suggestion').focus();
+                    lastView = this;
                 }
                 event.preventDefault();
                 break;
@@ -634,6 +671,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     });
 
     var initCount = 0;
+    var lastView;
 
     autocomplete.init = function(options) {
 
@@ -676,16 +714,91 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                 
             });
         }
+
+        document.addEventListener('click', function() {
+            // console.log('click');
+
+            if (suggestionListDom) {
+                circular.addClass(suggestionListDom, 'is-hidden');
+            }
+        });
+
+        document.querySelector('body').addEventListener('keydown', function(event) {
+            var key = event.keyCode || event.which;
+            var target = event.target;
+            // console.log(event.target);
+            if (target.className === 'cc-suggestion') {
+                switch (key) {
+                    // enter
+                    case 13:
+                        insertSuggestion.bind(lastView)(target.textContent);
+                        event.preventDefault();
+                        break;
+                    // esc
+                    case 27:
+                        lastView.textarea.focus();
+                        break;
+                    // up
+                    case 37:
+                    case 38:
+                        if (target.previousElementSibling) {
+                            target.previousElementSibling.focus();
+                            event.preventDefault();
+                        } else {
+                            lastView.textarea.focus();
+                            event.preventDefault();
+                        }
+                        break;
+                    // down arrow
+                    case 39:
+                    case 40:
+                        if (target.nextElementSibling) {
+                            target.nextElementSibling.focus();
+                            event.preventDefault();
+                        }
+                        break;
+                }
+                event.stopImmediatePropagation();
+            } else if (target.className === 'cc-autofill') {
+                switch (key) {
+                    // backsplash
+                    case 8:
+                    // enter
+                    case 13:
+                    // delete
+                    case 46:
+                        removeFilled.bind(lastView)(target);
+                        event.preventDefault();
+                        break;
+                    // esc
+                    case 27:
+                        lastView.textarea.focus();
+                        break;
+                    // left
+                    case 37:
+                    // case 38:
+                        if (target.previousElementSibling) {
+                            target.previousElementSibling.focus();
+                            event.preventDefault();
+                        // } else {
+                            // lastView.textarea.focus();
+                            // event.preventDefault();
+                        }
+                        break;
+                    // right arrow
+                    case 39:
+                    // case 40:
+                        if (target.nextElementSibling) {
+                            target.nextElementSibling.focus();
+                            event.preventDefault();
+                        }
+                        break;
+                }
+                event.stopImmediatePropagation();
+            }
+        });
             
     };
-
-    document.addEventListener('click', function() {
-        // console.log('click');
-
-        if (suggestionListDom) {
-            circular.addClass(suggestionListDom, 'is-hidden');
-        }
-    });
 
     return autocomplete;
 }]);
