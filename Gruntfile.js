@@ -86,7 +86,7 @@ module.exports = function (grunt) {
             },
             test: {
                 options: {
-                    open: false,
+                    // open: false,
                     port: 9001,
                     middleware: function(connect) {
                         return [
@@ -98,6 +98,18 @@ module.exports = function (grunt) {
                     }
                 }
             },
+            // test: {
+            //     options: {
+            //         middleware: function(connect) {
+            //             return [
+            //                 require('connect-livereload')(),
+            //                 mountFolder(connect, '.tmp'),
+            //                 mountFolder(connect, 'test')
+            //             ];
+            //         },
+            //         port: grunt.option('port') ? Number(grunt.option('port')) + 1 : 9001
+            //     }
+            // },
             dist: {
                 options: {
                     base: '<%= config.dist %>',
@@ -303,6 +315,17 @@ module.exports = function (grunt) {
                 cwd: '<%= config.app %>/modules',
                 dest: '.tmp/modules/',
                 src: '{,*/}*.css'
+            },
+            test: {
+                expand: true,
+                dot: true,
+                cwd: '<%= config.app %>',
+                dest: 'test',
+                src: [
+                    'scripts/**/*',
+                    'dataset/*.json',
+                    'modules/*'
+                ]
             }
         },
 
@@ -312,7 +335,8 @@ module.exports = function (grunt) {
                 'copy:styles'
             ],
             test: [
-                'copy:styles'
+                'copy:styles',
+                'copy:test'
             ],
             dist: [
                 'copy:styles',
@@ -356,6 +380,24 @@ module.exports = function (grunt) {
             'mocha'
         ]);
     });
+
+    // grunt.registerTask('test', function(target) {
+    //     var tasks = [
+    //         'clean:server',
+    //         'coffee',
+    //         'jst',
+    //         'connect:test'
+    //     ];
+
+    //     if (target === 'browser') {
+    //         tasks.push('open:test');
+    //         tasks.push('watch');
+    //     } else {
+    //         tasks.push('mocha');
+    //     }
+
+    //     grunt.task.run(tasks);
+    // });
 
     grunt.registerTask('build', [
         'clean:dist',
