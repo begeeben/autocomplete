@@ -177,21 +177,6 @@ circular.Module('trieMatcher', [function() {
             }
 
             traverse(node);
-
-            // var i=0, queryChar;
-            // while (i<queryString.length && node) {
-            //     // depth first search
-            //     queryChar = queryString[i].toLowerCase();
-            //     // lastNode = node;
-            //     node = node.children[queryChar];
-            //     i++;
-            // }
-
-            // if (node) {
-            //     for (var j=0; j<node.ids.length && matches.length < max; j++) {
-            //         matches.push(this.sourceArray[node.ids[j]]);
-            //     }
-            // }
                 
             return matches.length > 0 ? matches : null;
         },
@@ -419,7 +404,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
             self.inputDom.removeChild(node);
             if (self.textarea.value.trim()) {
-                // showSuggestions.bind(self)();
                 getSuggestions.bind(self)(self.textarea.value);
             }
             event.stopPropagation();
@@ -446,14 +430,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
         self.inputDom.removeChild(node);
         if (self.textarea.value.trim()) {
-            // showSuggestions.bind(self)();
             getSuggestions.bind(self)(self.textarea.value);
         }
     }
 
     function onInput(event) {
-        // this.textarea.setCustomValidity('');
-
         if (this.textarea.value.trim()) {
             getSuggestions.bind(this)(this.textarea.value);
         } else {
@@ -466,27 +447,14 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     // should be called using onKeypress.bind(this)()
     //      guess this make it harder to read and maintain in the future...
     //      read: http://stackoverflow.com/a/7688882/1400167
+    // TBC
     function onKeypress(event) {
         // var queryString = this.textarea.value;
         var key = event.keyCode || event.which;
         this.queryString += String.fromCharCode(key);
 
-        // console.log(key);
-        // console.log(String.fromCharCode(key));
-        console.log(this.queryString);
-        console.log(document.querySelectorAll('.cc-textarea')[1].value);
-        // if (event.which) {
-        //     console.log()
-        // }
-
         // update suggestion list
-        getSuggestions(this.queryString).then(function(data) {
-            console.log(data);
-            // appendSuggestions(data);
-        });
-
-        // circular.removeClass(suggestionListDom, 'is-hidden');
-        // showSuggestions.bind(this)();
+        getSuggestions(this.queryString);
     }
 
     // handle backspace and delete
@@ -494,18 +462,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         var key = event.keyCode || event.which;
         var value = this.textarea.value;
         var suggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
-        // console.log(key);
-        // console.log(String.fromCharCode(key));
-
-        // if (key === 8) {
-        //     // backspace pressed
-        //     this.queryString = this.queryString.substr(0, this.queryString.length-1);
-        //     console.log(this.queryString);
-        //     console.log(document.querySelectorAll('.cc-textarea')[1].value);
-        // } else if (key === 46) {
-        //     // delete pressed
-        //     console.log(this.queryString);
-        // }
 
         switch (key) {
             // backslash
@@ -577,7 +533,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.root = document.querySelector(options.selector);
         this.inputDom = inputDom.cloneNode(true);
         this.textarea = this.inputDom.querySelector('.cc-textarea');
-        // calculate textarea size
 
         circular.addClass(this.root, 'cc-autocomplete');
         // append initial widget dom elements
@@ -594,8 +549,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.hiddenInput = this.textarea.nextElementSibling;
         this.hiddenInput.setAttribute('name', this.options.name);
 
-        // this.textarea.setCustomValidity('required');
-
         this.textarea.addEventListener('input', onInput.bind(this));
         // this.textarea.addEventListener('keypress', onKeypress.bind(this));
         this.textarea.addEventListener('keydown', onKeydown.bind(this));
@@ -603,12 +556,10 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             if (self.textarea.value.trim()) {
                 // update suggestion list
                 getSuggestions.bind(self)(self.textarea.value);
-                // showSuggestions.bind(self)();
                 event.stopPropagation();
             }
         });
         this.textarea.addEventListener('keyup', function (event) {
-            // console.log('keyup');
             var isValid = true;
             var errMessage;
             var value = this.value.trim();
@@ -622,10 +573,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     // this.setCustomValidity('');
                 } else {
                     // invalid
-                    // showSuggestions.bind(self)();
-                    // event.stopImmediatePropagation();
-                    // this.setCustomValidity('no result matches');
-                    // event.preventDefault();
                     isValid = false;
                     errMessage = 'no result matches';
                 }
@@ -647,7 +594,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
             if (value && closestSuggestion && value.match(new RegExp(closestSuggestion, 'i'))) {
                 insertSuggestion.bind(self)(closestSuggestion);
-                // this.setCustomValidity('');
             }
             // if validated, fill hidden inputs
             if (this.checkValidity) {
@@ -657,17 +603,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         });
 
         // better cache forms and event handler
-        var form = findAncestor(this.root, 'FORM');
-        form.addEventListener('submit', function (event) {
-            // validate autocomplete
-            // 1st check if textarea is empty or not, if not is the value match any suggestion
-
-            // 2nd if yes, see if there's any autofill element
-
-            // if validated, fill hidden inputs
-
-            // event.preventDefault();
-        });
+        // var form = findAncestor(this.root, 'FORM');
+        // form.addEventListener('submit', function (event) {});
     };
 
     // cache dom before usage
@@ -721,8 +658,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         }
 
         document.addEventListener('click', function() {
-            // console.log('click');
-
             if (suggestionListDom) {
                 circular.addClass(suggestionListDom, 'is-hidden');
             }
@@ -731,7 +666,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         document.querySelector('body').addEventListener('keydown', function(event) {
             var key = event.keyCode || event.which;
             var target = event.target;
-            // console.log(event.target);
+            
             if (target.className === 'cc-suggestion') {
                 switch (key) {
                     // enter
@@ -785,9 +720,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                         if (target.previousElementSibling) {
                             target.previousElementSibling.focus();
                             event.preventDefault();
-                        // } else {
-                            // lastView.textarea.focus();
-                            // event.preventDefault();
                         }
                         break;
                     // right arrow
