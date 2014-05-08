@@ -24,7 +24,8 @@
 	vertical-align: middle;
 }
 
-.cc-autocomplete .cc-input .cc-autofill:hover {
+.cc-autocomplete .cc-input .cc-autofill:hover,
+.cc-autocomplete .cc-input .cc-autofill:focus {
 	background-color: #f4f4f4;
 }
 
