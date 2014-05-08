@@ -333,6 +333,9 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         });
     }
 
+    // validate data
+    function validateInput() {}
+
     // append suggestions onto the widget
     function updateSuggestions(data) {
         var self = this;
@@ -342,16 +345,24 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         if (data) {
             for (var i=0, len=data.length; i<len; i++) {
-                // clone suggestion dom
-                node = suggestionDom.cloneNode(true);
-                node.innerHTML = data[i];
-                node.addEventListener('click', function (event) {
-                    insertSuggestion.bind(self)(event.target.innerHTML);
-                });
-                // append to suggestion list
-                suggestionListDom.appendChild(node);
+                // check if the data is already filled
+                if (self.filled.indexOf(data[i]) === -1) {
+                    // clone suggestion dom
+                    node = suggestionDom.cloneNode(true);
+                    node.innerHTML = data[i];
+                    node.addEventListener('click', function (event) {
+                        insertSuggestion.bind(self)(event.target.innerHTML);
+                    });
+                    // append to suggestion list
+                    suggestionListDom.appendChild(node);
+                }
             }
-            showSuggestions.bind(self)();
+            if (suggestionListDom.children.length>0) {
+                showSuggestions.bind(self)();
+            } else {
+                circular.addClass(suggestionListDom, 'is-hidden');
+            }
+            
         } else {
             circular.addClass(suggestionListDom, 'is-hidden');
             
@@ -376,27 +387,37 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     function insertSuggestion(value) {
         var self = this;
         var node = autofillDom.cloneNode(true);
+        self.filled.push(value);
         node.querySelector('.cc-autofill-text').innerHTML = value;
         node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
             // update textarea width
             self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
             self.textarea.focus();
             // remove autofill
+            self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
             self.inputDom.removeChild(node);
             if (self.textarea.value.trim()) {
-                showSuggestions.bind(self)();
+                // showSuggestions.bind(self)();
+                getSuggestions.bind(self)(self.textarea.value);
             }
             event.stopPropagation();
+
+            console.log(self.filled);
         });
         this.inputDom.insertBefore(node, this.textarea);
         // update textarea width
         this.textarea.style.width = this.textarea.offsetWidth - node.offsetWidth - parseInt(getComputedStyle(node).marginLeft) - parseInt(getComputedStyle(node).marginRight) + 'px';
         this.textarea.value = '';
+        this.textarea.setCustomValidity('');
         this.textarea.focus();
         circular.addClass(suggestionListDom, 'is-hidden');
+
+        console.log(self.filled);
     }
 
     function onInput(event) {
+        // this.textarea.setCustomValidity('');
+
         if (this.textarea.value.trim()) {
             getSuggestions.bind(this)(this.textarea.value);
         } else {
@@ -453,8 +474,12 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     // submit event handler
     function onSubmit() {}
 
-    // validate data
-    function validateInput() {}
+    function findAncestor (el, tagName) {
+        while ((el = el.parentElement) && el.tagName !== tagName) {
+
+        }
+        return el;
+    }
 
     var View = function (options) {
         var self = this;
@@ -462,9 +487,13 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.root = null;
         this.inputDom = null;
         this.textarea = null;
+        this.hiddenInput = null;
         this.queryString = '';
+        // track filled data
+        this.filled = [];
 
-        this.options = circular.extend(options, {maxSuggestions: 10, cache: true});
+        // this.options = circular.extend(options, {maxSuggestions: 10, cache: true});
+        this.options = options;
 
         // get root Dom element
         this.root = document.querySelector(options.selector);
@@ -475,6 +504,19 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         circular.addClass(this.root, 'cc-autocomplete');
         // append initial widget dom elements
         this.root.appendChild(this.inputDom);
+
+        if (options.required) {
+        //     this.textarea.setAttribute('required', true);
+            this.textarea.setCustomValidity('required');
+        }
+        if (options.text.trim()) {
+            this.textarea.value = options.text.trim();
+        } 
+        // this.textarea.setAttribute('name', this.options.name);
+        this.hiddenInput = this.textarea.nextElementSibling;
+        this.hiddenInput.setAttribute('name', this.options.name);
+
+        // this.textarea.setCustomValidity('required');
 
         this.textarea.addEventListener('input', onInput.bind(this));
         // this.textarea.addEventListener('keypress', onKeypress.bind(this));
@@ -487,31 +529,102 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                 event.stopPropagation();
             }
         });
-    };
+        this.textarea.addEventListener('keyup', function (event) {
+            // console.log('keyup');
+            var isValid = true;
+            var errMessage;
+            var value = this.value.trim();
+            var closestSuggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
+            // 1st check if textarea is empty or not, if not is the value match any suggestion
+            if (value) {
+                // need unicode normalization to fix unicode comparison failed issue
+                // http://stackoverflow.com/a/10805884/1400167
+                if (closestSuggestion && value.match(new RegExp(closestSuggestion, 'i'))) {
+                    // insertSuggestion.bind(self)(closestSuggestion);
+                    // this.setCustomValidity('');
+                } else {
+                    // invalid
+                    // showSuggestions.bind(self)();
+                    // event.stopImmediatePropagation();
+                    // this.setCustomValidity('no result matches');
+                    // event.preventDefault();
+                    isValid = false;
+                    errMessage = 'no result matches';
+                }
+            } else if (self.options.required) {
+                // 2nd if yes, see if there's any autofill element
+                // if no suggestion selected
+                if (self.filled.length === 0) {
+                    isValid = false;
+                    errMessage = 'required';
+                }
+            }
 
-    // View.prototype = {
-    //     insertSuggestion: function () {},
-    //     updateSuggestionList: function () {}
-    // };
+            this.setCustomValidity(isValid ? '' : errMessage);
+
+        });
+        this.textarea.addEventListener('blur', function (event) {
+            var value = this.value.trim();
+            var closestSuggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
+
+            if (value && closestSuggestion && value.match(new RegExp(closestSuggestion, 'i'))) {
+                insertSuggestion.bind(self)(closestSuggestion);
+                // this.setCustomValidity('');
+            }
+            // if validated, fill hidden inputs
+            if (this.checkValidity) {
+                self.hiddenInput.value = self.filled ? self.filled.join(',') : '';
+            }
+
+        });
+
+        // better cache forms and event handler
+        var form = findAncestor(this.root, 'FORM');
+        form.addEventListener('submit', function (event) {
+            // validate autocomplete
+            // 1st check if textarea is empty or not, if not is the value match any suggestion
+
+            // 2nd if yes, see if there's any autofill element
+
+            // if validated, fill hidden inputs
+
+            // event.preventDefault();
+        });
+    };
 
     // cache dom before usage
     var templatePromise = getPlainTextTemplate({url: 'modules/circular.autocomplete.html'}).then(function (data) {
         parseDom(data);
     });
 
+    var initCount = 0;
+
     autocomplete.init = function(options) {
 
-        // options = circular.extend(options, {maxSuggestions: 10});
+        options = circular.extend(options, {
+            // name: 'cc-auto-' + Object.keys(autocompleteList).length,
+            name: 'cc-auto-' + initCount,
+            required: false,
+            maxSuggestions: 10,
+            text: ''
+            // cache: true
+        });
 
         if (!options.selector) {
-            throw 'please specify element selector for the autocomplete widget';
+            console.log('please specify element selector for the autocomplete widget');
+            return;
+        }
+
+        if (!document.querySelector(options.selector)) {
+            console.log('no element found');
+            return;
         }
 
         // support selector for multiple elements initialization later
 
         // check if the selector or element has been initialized
 
-        // maybe cache some dataset first
+        initCount++;
 
         // check if template has been loaded
         if (inputDom) {
@@ -524,13 +637,15 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                 if (!document.querySelector('.cc-suggestions')) {
                     document.body.appendChild(suggestionListDom);
                 }
-                    
+                
             });
         }
             
     };
 
     document.addEventListener('click', function() {
+        // console.log('click');
+
         if (suggestionListDom) {
             circular.addClass(suggestionListDom, 'is-hidden');
         }
