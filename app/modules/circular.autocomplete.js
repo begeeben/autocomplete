@@ -277,6 +277,23 @@ circular.Module('autocompleteSource', ['q', 'ajax', 'trieMatcher', function (q, 
         return deferred.promise;
     };
 
+    autocompleteSource.getExactMatch = function (queryString) {
+        var deferred = q.defer();
+
+        if (matcherCache[defaultOptions.url]) {
+            // console.log('resolve autocompleteSource.getSuggestions promise from cache');
+            deferred.resolve(matcherCache[defaultOptions.url].getExactMatch(queryString));
+        } else {
+            // console.log('set sourcePromise then callback');
+            sourcePromise.then(function (matcher) {
+                // console.log('resolve autocompleteSource.getSuggestions promise');
+                deferred.resolve(matcher.getExactMatch(queryString));
+            });
+        }
+
+        return deferred.promise;
+    };
+
     // preload default source
     var sourcePromise = getMatcher(defaultOptions);
 
