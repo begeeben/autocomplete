@@ -400,6 +400,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         }
     }
 
+    function hideSuggestions() {
+        suggestionListDom.innerHTML = '';
+        circular.addClass(suggestionListDom, 'is-hidden');
+    }
+
     // fill the value on the left hand side of the textarea
     function insertSuggestion(value) {
         var self = this;
