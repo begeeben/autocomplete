@@ -9,10 +9,10 @@
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
         <!-- build:css styles/vendor.css -->
         <!-- bower:css -->
-
         <!-- endbower -->
         <!-- endbuild -->
         <!-- build:css(.tmp) styles/main.css -->
+        <link rel="stylesheet" href="modules/circular.autocomplete.css">
         <link rel="stylesheet" href="styles/main.css">
         <!-- endbuild -->
     </head>
@@ -22,34 +22,91 @@
         <![endif]-->
 
 
-        <div class="hero-unit">
-          <h1>'Allo, 'Allo!</h1>
-          <p>You now have</p>
-          <ul>
-            <li>HTML5 Boilerplate</li>
+       <!--  <div class="cc-autocomplete">
+            <div class="cc-input"> -->
+                <!-- <input> -->
+                <!-- <div class="cc-autofill">
+                    <span class="cc-autofill-span">
+                        <div class="cc-autofill-text">suggestion</div>
+                        <div class="cc-autofill-remove">x</div>
+                    </span>
+                    <input name="to" type="hidden" value="suggestion">
+                </div>
+                <div class="cc-autofill">
+                    <span class="cc-autofill-span">
+                        <div class="cc-autofill-text">suggestion</div>
+                        <div class="cc-autofill-remove">x</div>
+                    </span>
+                    <input name="to" type="hidden" value="suggestion">
+                </div>
+                <textarea name="to" id="" class="cc-textarea" spellcheck="false" autocomplete="false" autocapitalize="off" autocorrect="off"></textarea>
+            </div>
+        </div> -->
 
+        <div class="page">
+            
+            <form>
+                <h1>basic</h1>
+                <div id="test"></div>
+                <h1>custom suggestion number</h1>
+                <h2>5</h2>
+                <div id="small"></div>
+                <h2>100</h2>
+                <div id="large"></div>
+                <h1>default value</h1>
+                <div id="default"></div>
+            </form>
 
-          </ul>
+            <form action="">
+                <h1>auto fill</h1>
+                <h2>please type 'tab'</h2>
+                <div id="fill"></div>
+                <h2>please type 'enter'</h2>
+                <div id="enter"></div>
+                <input type="submit">
+            </form>
+
+            <form action="">
+                <h1>try arrows/enter/esc/tab/delete anywhere you like</h1>
+                <div id="keys"></div>
+            </form>
+
+            <form action="" id="mock-form" name="mock-form">
+                <h1>form</h1>
+                <h2>custom name</h2>
+                <div id="another-test"></div>
+                <h2>validation</h2>
+                <div id="another"></div>
+                <h2>required</h2>
+                <div id="stopit"></div>
+                <input type="submit">
+            </form>
+                
+            <form>
+                <h1>custom suggestion source (TBC)</h1>
+                <!-- <div id="and-another"></div> -->
+                <h1>choose suggestion matcher (TBC)</h1>
+            </form>
+
         </div>
 
 
+            
+        
+        <!-- <div class="cc-suggestions">
+            <div class="cc-suggestion">suggestion</div>
+            <div class="cc-suggestion">suggestion</div>
+            <div class="cc-suggestion">suggestion</div>
+        </div> -->
+
         <!-- build:js scripts/vendor.js -->
         <!-- bower:js -->
-        <script src="../bower_components/jquery/dist/jquery.js"></script>
         <!-- endbower -->
         <!-- endbuild -->
 
-        <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
-        <script>
-            (function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
-            function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
-            e=o.createElement(i);r=o.getElementsByTagName(i)[0];
-            e.src='//www.google-analytics.com/analytics.js';
-            r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));
-            ga('create','UA-XXXXX-X');ga('send','pageview');
-        </script>
-
         <!-- build:js({app,.tmp}) scripts/main.js -->
+        <script src="scripts/circular.js"></script>
+        <script src="modules/circular.autocomplete.js"></script>
         <script src="scripts/main.js"></script>
         <!-- endbuild -->
 </body>
