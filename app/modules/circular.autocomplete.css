@@ -63,22 +63,40 @@
 	vertical-align: middle;
 }
 
+.cc-autocomplete .cc-input .cc-textarea:invalid {
+ 	background-color: #ffdddd;
+}
+
 .cc-suggestions {
 	background-color: #fff;
 	position: absolute;
 	border: 1px solid #999;
 	border-radius: 3px;
+	padding: 4px;
+	max-height: 300px;
+	overflow-x: hidden;
+	overflow-y: auto;
 }
+
+/*.cc-suggestions::-webkit-scrollbar {
+	height: 16px;
+	overflow: visible;
+	width: 16px;
+	display: none;
+}*/
 
 .cc-suggestions .cc-suggestion {
 	background-color: #f4f4f4;
+	border: 2px solid #fff;
 	border-radius: 3px;
-	margin: 5px;
-	padding: 5px;
+	/*margin: 1px;*/
+	padding: 7px;
+	padding-right: 20px;
 	color: #666;
+	overflow: visible;
 }
 
-.cc-suggestions .cc-suggestion:hover {
+.cc-suggestions .cc-suggestion:hover, .cc-suggestions .cc-suggestion:focus {
 	background-color: #dfdfdf;
 	cursor: pointer;
 }
