@@ -467,25 +467,44 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         });
 
         // circular.removeClass(suggestionListDom, 'is-hidden');
-        showSuggestions.bind(this)();
+        // showSuggestions.bind(this)();
     }
 
     // handle backspace and delete
     function onKeydown(event) {
         var key = event.keyCode || event.which;
+        var value = this.textarea.value;
+        var suggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
         // console.log(key);
         // console.log(String.fromCharCode(key));
 
-        if (key === 8) {
-            // backspace pressed
-            this.queryString = this.queryString.substr(0, this.queryString.length-1);
-            console.log(this.queryString);
-            console.log(document.querySelectorAll('.cc-textarea')[1].value);
-        } else if (key === 46) {
-            // delete pressed
-            console.log(this.queryString);
-        }
+        // if (key === 8) {
+        //     // backspace pressed
+        //     this.queryString = this.queryString.substr(0, this.queryString.length-1);
+        //     console.log(this.queryString);
+        //     console.log(document.querySelectorAll('.cc-textarea')[1].value);
+        // } else if (key === 46) {
+        //     // delete pressed
+        //     console.log(this.queryString);
+        // }
 
+        switch (key) {
+            // tab
+            case 9:
+                if (value && suggestion && !value.match(new RegExp(suggestion, 'i'))) {
+                    this.textarea.value = suggestion;
+
+                    event.preventDefault();
+                }
+                break;
+            // enter
+            case 13:
+                if (value && suggestion) {
+                    insertSuggestion.bind(this)(suggestion);
+                }
+                event.preventDefault();
+                break;
+        }
     }
 
     // submit event handler
@@ -537,7 +556,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         this.textarea.addEventListener('input', onInput.bind(this));
         // this.textarea.addEventListener('keypress', onKeypress.bind(this));
-        // this.textarea.addEventListener('keydown', onKeydown.bind(this));
+        this.textarea.addEventListener('keydown', onKeydown.bind(this));
         this.textarea.addEventListener('click', function (event) {
             if (self.textarea.value.trim()) {
                 // update suggestion list
