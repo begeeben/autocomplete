@@ -11,7 +11,10 @@
 'use strict';
 
 // consider to extract the dataset conversion logic out and make it accept a mapping callback for different input formats
+// duplicates in source should be removed
+// actually matchers could be used as singletons, need to redesign this to make the suggestion source configurable
 
+// TBC
 // Regex based string matching, test plaintext directly using Regex
 circular.Module('regexMatcher', [function () {
     var Matcher = function (options) {
@@ -47,7 +50,7 @@ circular.Module('regexMatcher', [function () {
 // loop based string matching, less memory space required than the trie based one
 // TBC:
 //      duplicates
-//      modify regex
+//      modify regex, still buggy
 circular.Module('loopMatcher', [function() {
     var Matcher = function (options) {
         this.options = circular.extend(options, {maxSuggestions: 10});
@@ -66,7 +69,7 @@ circular.Module('loopMatcher', [function() {
             var sourceArray = this.sourceArray;
 
             var i = 0;
-            var max = max || this.options.maxSuggestions;
+            max = max || this.options.maxSuggestions;
             while (i<sourceArray.length && matches.length < max) {
                 if (substrRegex.test(sourceArray[i])) {
                     matches.push(sourceArray[i]);
@@ -87,12 +90,127 @@ circular.Module('loopMatcher', [function() {
 
 // wonder if this solutions will out perform others: http://stackoverflow.com/a/679017
 // trie based string matching, requires more space, should be faster, write speed test later
+//
+// case insensitive
+circular.Module('trieMatcher', [function() {
+    function Node () {
+        this.ids = [];
+        this.children = {};
+    }
 
+    var Matcher = function (options) {
+        var i, j, len, sourceString, sourceChar, node;
+
+        this.options = circular.extend(options, {maxSuggestions: 10});
+
+        this.plaintext = options.plaintext;
+        this.sourceArray = JSON.parse(this.plaintext);
+        // sort the array
+        this.sourceArray.sort();
+        this.suggested = null;
+
+        // construct the trie
+        this.trie = new Node();
+        for (i=0, len=this.sourceArray.length; i<len; i++) {
+            node = this.trie;
+            sourceString = this.sourceArray[i];
+            for (j=0; j<sourceString.length; j++) {
+                sourceChar = sourceString[j].toLowerCase();
+                if (!node.children[sourceChar]) {
+                    node.children[sourceChar] = new Node();
+                }
+                node.children[sourceChar].ids.push(i);
+                node = node.children[sourceChar];
+            }
+        }
+    };
+
+    Matcher.prototype = {
+        getMatches: function (queryString, max) {
+            var self = this;
+            // var substrRegex = new RegExp(queryString, 'gi');
+            var matches = [];
+            // var sourceArray = this.sourceArray;
+            var node = this.trie;
+            // var suggestedIds = [];
+            // var nodeStack = [];
+            // var i = 0;
+            max = max || this.options.maxSuggestions;
+            // queryChar = queryString[i].toLowerCase();
+
+            var nodeQueue = [];
+            // breadth first traveral for the search starting node
+            function traverse (node) {
+                search (queryString, node);
+
+                if (matches.length < max) {
+                    for (var key in node.children) {
+                        nodeQueue.push(node.children[key]);
+                    }
+
+                    if (nodeQueue.length > 0) {
+                        traverse(nodeQueue.shift());
+                    }
+                }
+            }
+
+            // depth first search
+            function search (queryString, node) {
+                var queryChar;
+                var i=0;
+                while (i<queryString.length && node) {
+                    // depth first search
+                    queryChar = queryString[i].toLowerCase();
+                    // lastNode = node;
+                    node = node.children[queryChar];
+                    i++;
+                }
+
+                if (node) {
+                    for (var j=0; j<node.ids.length && matches.length < max; j++) {
+                        // check if it's already matched
+                        if (matches.indexOf(self.sourceArray[node.ids[j]]) === -1) {
+                            matches.push(self.sourceArray[node.ids[j]]);
+                        }
+                    }
+                }
+            }
+
+            traverse(node);
+
+            // var i=0, queryChar;
+            // while (i<queryString.length && node) {
+            //     // depth first search
+            //     queryChar = queryString[i].toLowerCase();
+            //     // lastNode = node;
+            //     node = node.children[queryChar];
+            //     i++;
+            // }
+
+            // if (node) {
+            //     for (var j=0; j<node.ids.length && matches.length < max; j++) {
+            //         matches.push(this.sourceArray[node.ids[j]]);
+            //     }
+            // }
+                
+            return matches.length > 0 ? matches : null;
+        },
+        getExactMatch: function (queryString) {
+
+        }
+    };
+
+    return {
+        create: function (options) {
+            return new Matcher(options);
+        }
+    };
+}]);
 
 
 // although the module is designed to hold multiple suggestion sources
 // support for suggestions from multiple sources is TBC
-circular.Module('autocompleteSource', ['q', 'ajax', 'loopMatcher', function (q, ajax, matcher) {
+circular.Module('autocompleteSource', ['q', 'ajax', 'trieMatcher', function (q, ajax, matcher) {
     var autocompleteSource = {};
     var defaultOptions = {url: 'dataset/tz.json', maxSuggestions: 10, cache: true};
     // ajax cache... should be moved to ajax module later
