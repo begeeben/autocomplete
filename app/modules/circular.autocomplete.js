@@ -399,10 +399,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         var node = autofillDom.cloneNode(true);
         self.filled.push(value);
         node.querySelector('.cc-autofill-text').innerHTML = value;
-        node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
-            removeFilled.bind(self)(node);
-            event.stopPropagation();
-        });
         this.inputDom.insertBefore(node, this.textarea);
         // update textarea width
         this.textarea.style.width = this.textarea.offsetWidth - node.offsetWidth - parseInt(getComputedStyle(node).marginLeft) - parseInt(getComputedStyle(node).marginRight) + 'px';
@@ -537,16 +533,22 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.hiddenInput = this.textarea.nextElementSibling;
         this.hiddenInput.setAttribute('name', this.options.name);
 
-        this.textarea.addEventListener('input', onInput.bind(this));
-        // this.textarea.addEventListener('keypress', onKeypress.bind(this));
-        this.textarea.addEventListener('keydown', onKeydown.bind(this));
-        this.textarea.addEventListener('click', function (event) {
-            if (self.textarea.value.trim()) {
-                // update suggestion list
-                getSuggestions.bind(self)(self.textarea.value);
+        this.inputDom.addEventListener('click', function (event) {
+            var target = event.target;
+            if (target && target.className === 'cc-textarea') {
+                if (target.value.trim()) {
+                    getSuggestions.bind(self)(self.textarea.value);
+                    event.stopPropagation();
+                }
+            } else if (target && target.className === 'cc-autofill-remove') {
+                removeFilled.bind(self)(target.parentNode.parentNode);
                 event.stopPropagation();
             }
         });
+
+        this.textarea.addEventListener('input', onInput.bind(this));
+        // this.textarea.addEventListener('keypress', onKeypress.bind(this));
+        this.textarea.addEventListener('keydown', onKeydown.bind(this));
         this.textarea.addEventListener('keyup', function (event) {
             var isValid = true;
             var errMessage;
