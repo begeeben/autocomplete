@@ -126,7 +126,7 @@ circular.Module('trieMatcher', [function() {
     };
 
     Matcher.prototype = {
-        getMatches: function (queryString, max) {
+        getMatches: function (queryString, max, excludeArray) {
             var self = this;
             // var substrRegex = new RegExp(queryString, 'gi');
             var matches = [];
@@ -169,7 +169,8 @@ circular.Module('trieMatcher', [function() {
                 if (node) {
                     for (var j=0; j<node.ids.length && matches.length < max; j++) {
                         // check if it's already matched
-                        if (matches.indexOf(self.sourceArray[node.ids[j]]) === -1) {
+                        if (matches.indexOf(self.sourceArray[node.ids[j]]) === -1 &&
+                            excludeArray.indexOf(self.sourceArray[node.ids[j]]) === -1) {
                             matches.push(self.sourceArray[node.ids[j]]);
                         }
                     }
@@ -245,17 +246,17 @@ circular.Module('autocompleteSource', ['q', 'ajax', 'trieMatcher', function (q, 
     // TBC
     autocompleteSource.addSource = function (options) {};
 
-    autocompleteSource.getSuggestions = function (queryString, max) {
+    autocompleteSource.getSuggestions = function (queryString, max, excludeArray) {
         var deferred = q.defer();
 
         if (matcherCache[defaultOptions.url]) {
             // console.log('resolve autocompleteSource.getSuggestions promise from cache');
-            deferred.resolve(matcherCache[defaultOptions.url].getMatches(queryString, max));
+            deferred.resolve(matcherCache[defaultOptions.url].getMatches(queryString, max, excludeArray));
         } else {
             // console.log('set sourcePromise then callback');
             sourcePromise.then(function (matcher) {
                 // console.log('resolve autocompleteSource.getSuggestions promise');
-                deferred.resolve(matcher.getMatches(queryString, max));
+                deferred.resolve(matcher.getMatches(queryString, max, excludeArray));
             });
         }
 
@@ -330,7 +331,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     // get autocomplete suggestions
     function getSuggestions(queryString) {
         var self = this;
-        autocompleteSource.getSuggestions(queryString, this.options.maxSuggestions).then(function (data) {
+        autocompleteSource.getSuggestions(queryString, this.options.maxSuggestions, this.filled).then(function (data) {
             updateSuggestions.bind(self)(data);
         });
     }
