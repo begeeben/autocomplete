@@ -381,88 +381,88 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                 
             });
         }
-
-        document.addEventListener('click', function() {
-            if (suggestionListDom) {
-                hideSuggestions();
-            }
-        });
-
-        document.querySelector('body').addEventListener('keydown', function(event) {
-            var key = event.keyCode || event.which;
-            var target = event.target;
-            
-            if (target.className === 'cc-suggestion') {
-                switch (key) {
-                    // tab
-                    case 9:
-                    // enter
-                    case 13:
-                        insertSuggestion.bind(lastView)(target.textContent);
-                        event.preventDefault();
-                        break;
-                    // esc
-                    case 27:
-                        lastView.textarea.focus();
-                        break;
-                    // up
-                    case 37:
-                    case 38:
-                        if (target.previousElementSibling) {
-                            target.previousElementSibling.focus();
-                            event.preventDefault();
-                        } else {
-                            lastView.textarea.focus();
-                            event.preventDefault();
-                        }
-                        break;
-                    // down arrow
-                    case 39:
-                    case 40:
-                        if (target.nextElementSibling) {
-                            target.nextElementSibling.focus();
-                            event.preventDefault();
-                        }
-                        break;
-                }
-                event.stopImmediatePropagation();
-            } else if (target.className === 'cc-autofill') {
-                switch (key) {
-                    // backsplash
-                    case 8:
-                    // enter
-                    case 13:
-                    // delete
-                    case 46:
-                        removeFilled.bind(lastView)(target);
-                        event.preventDefault();
-                        break;
-                    // esc
-                    case 27:
-                        lastView.textarea.focus();
-                        break;
-                    // left
-                    case 37:
-                    // case 38:
-                        if (target.previousElementSibling) {
-                            target.previousElementSibling.focus();
-                            event.preventDefault();
-                        }
-                        break;
-                    // right arrow
-                    case 39:
-                    // case 40:
-                        if (target.nextElementSibling) {
-                            target.nextElementSibling.focus();
-                            event.preventDefault();
-                        }
-                        break;
-                }
-                event.stopImmediatePropagation();
-            }
-        });
             
     };
+
+    document.addEventListener('click', function() {
+        if (suggestionListDom) {
+            hideSuggestions();
+        }
+    });
+
+    document.querySelector('body').addEventListener('keydown', function(event) {
+        var key = event.keyCode || event.which;
+        var target = event.target;
+        
+        if (target.className === 'cc-suggestion') {
+            switch (key) {
+                // tab
+                case 9:
+                // enter
+                case 13:
+                    insertSuggestion.bind(lastView)(target.textContent);
+                    event.preventDefault();
+                    break;
+                // esc
+                case 27:
+                    lastView.textarea.focus();
+                    break;
+                // up
+                case 37:
+                case 38:
+                    if (target.previousElementSibling) {
+                        target.previousElementSibling.focus();
+                        event.preventDefault();
+                    } else {
+                        lastView.textarea.focus();
+                        event.preventDefault();
+                    }
+                    break;
+                // down arrow
+                case 39:
+                case 40:
+                    if (target.nextElementSibling) {
+                        target.nextElementSibling.focus();
+                        event.preventDefault();
+                    }
+                    break;
+            }
+            event.stopImmediatePropagation();
+        } else if (target.className === 'cc-autofill') {
+            switch (key) {
+                // backsplash
+                case 8:
+                // enter
+                case 13:
+                // delete
+                case 46:
+                    removeFilled.bind(lastView)(target);
+                    event.preventDefault();
+                    break;
+                // esc
+                case 27:
+                    lastView.textarea.focus();
+                    break;
+                // left
+                case 37:
+                // case 38:
+                    if (target.previousElementSibling) {
+                        target.previousElementSibling.focus();
+                        event.preventDefault();
+                    }
+                    break;
+                // right arrow
+                case 39:
+                // case 40:
+                    if (target.nextElementSibling) {
+                        target.nextElementSibling.focus();
+                        event.preventDefault();
+                    }
+                    break;
+            }
+            event.stopImmediatePropagation();
+        }
+    });
 
     return autocomplete;
 }]);
