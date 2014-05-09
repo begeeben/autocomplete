@@ -589,6 +589,12 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             this.setCustomValidity(isValid ? '' : errMessage);
 
         });
+        this.textarea.addEventListener('focus', function (event) {
+            var value = this.value.trim();
+            if (value) {
+                getSuggestions.bind(self)(value);
+            }
+        });
         this.textarea.addEventListener('blur', function (event) {
             var value = this.value.trim();
             var closestSuggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
