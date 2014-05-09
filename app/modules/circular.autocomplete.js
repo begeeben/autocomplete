@@ -352,9 +352,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         lastView = this;
 
-        // function onNodeClick (event) {
-        //     insertSuggestion.bind(self)(event.target.innerHTML);
-        // }
         // clear suggestions
         suggestionListDom.innerHTML = '';
 
@@ -365,7 +362,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     // clone suggestion dom
                     node = suggestionDom.cloneNode(true);
                     node.innerHTML = data[i];
-                    // node.addEventListener('click', onNodeClick);
                     // append to suggestion list
                     suggestionListDom.appendChild(node);
                 }
@@ -617,6 +613,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     });
 
     var initCount = 0;
+    // the current autocomplete widget a user is working on
     var lastView;
 
     autocomplete.init = function(options) {
