@@ -343,6 +343,10 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     function updateSuggestions(data) {
         var self = this;
         var node;
+
+        function onNodeClick (event) {
+            insertSuggestion.bind(self)(event.target.innerHTML);
+        }
         // clear suggestions
         suggestionListDom.innerHTML = '';
 
@@ -353,9 +357,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     // clone suggestion dom
                     node = suggestionDom.cloneNode(true);
                     node.innerHTML = data[i];
-                    node.addEventListener('click', function (event) {
-                        insertSuggestion.bind(self)(event.target.innerHTML);
-                    });
+                    node.addEventListener('click', onNodeClick);
                     // append to suggestion list
                     suggestionListDom.appendChild(node);
                 }
