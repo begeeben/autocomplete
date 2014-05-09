@@ -363,11 +363,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             if (suggestionListDom.children.length>0) {
                 showSuggestions.bind(self)();
             } else {
-                circular.addClass(suggestionListDom, 'is-hidden');
+                hideSuggestions();
             }
             
         } else {
-            circular.addClass(suggestionListDom, 'is-hidden');
+            hideSuggestions();
             
         }
     }
@@ -417,7 +417,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.textarea.value = '';
         this.textarea.setCustomValidity('');
         this.textarea.focus();
-        circular.addClass(suggestionListDom, 'is-hidden');
+        hideSuggestions();
 
         console.log(self.filled);
     }
@@ -439,7 +439,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         if (this.textarea.value.trim()) {
             getSuggestions.bind(this)(this.textarea.value);
         } else {
-            circular.addClass(suggestionListDom, 'is-hidden');
+            hideSuggestions();
         }        
     }
 
@@ -660,7 +660,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         document.addEventListener('click', function() {
             if (suggestionListDom) {
-                circular.addClass(suggestionListDom, 'is-hidden');
+                hideSuggestions();
             }
         });
 
