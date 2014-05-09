@@ -398,18 +398,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         self.filled.push(value);
         node.querySelector('.cc-autofill-text').innerHTML = value;
         node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
-            // update textarea width
-            self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
-            self.textarea.focus();
-            // remove autofill
-            self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
-            self.inputDom.removeChild(node);
-            if (self.textarea.value.trim()) {
-                getSuggestions.bind(self)(self.textarea.value);
-            }
+            removeFilled.bind(self)(node);
             event.stopPropagation();
-
-            console.log(self.filled);
         });
         this.inputDom.insertBefore(node, this.textarea);
         // update textarea width
@@ -433,6 +423,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         if (self.textarea.value.trim()) {
             getSuggestions.bind(self)(self.textarea.value);
         }
+
+        console.log(self.filled);
     }
 
     function onInput(event) {
@@ -508,13 +500,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
     // submit event handler
     function onSubmit() {}
-
-    function findAncestor (el, tagName) {
-        while ((el = el.parentElement) && el.tagName !== tagName) {
-
-        }
-        return el;
-    }
 
     var View = function (options) {
         var self = this;
