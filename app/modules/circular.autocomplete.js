@@ -320,6 +320,12 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         suggestionListDom.removeChild(suggestionDom);
 
         suggestionListDom.addEventListener('click', function (event) {
+            var target = event.target;
+
+            if (target && target.className === 'cc-suggestion') {
+                insertSuggestion.bind(lastView)(target.textContent);
+            }
+
             event.stopPropagation();
         });
     }
@@ -344,9 +350,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         var self = this;
         var node;
 
-        function onNodeClick (event) {
-            insertSuggestion.bind(self)(event.target.innerHTML);
-        }
+        lastView = this;
+
+        // function onNodeClick (event) {
+        //     insertSuggestion.bind(self)(event.target.innerHTML);
+        // }
         // clear suggestions
         suggestionListDom.innerHTML = '';
 
@@ -357,7 +365,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     // clone suggestion dom
                     node = suggestionDom.cloneNode(true);
                     node.innerHTML = data[i];
-                    node.addEventListener('click', onNodeClick);
+                    // node.addEventListener('click', onNodeClick);
                     // append to suggestion list
                     suggestionListDom.appendChild(node);
                 }
