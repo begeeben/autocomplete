@@ -137,6 +137,7 @@ circular.Module('trieMatcher', [function() {
             // var i = 0;
             max = max || this.options.maxSuggestions;
             // queryChar = queryString[i].toLowerCase();
+            excludeArray = excludeArray || [];
 
             var nodeQueue = [];
             // breadth first traveral for the search starting node
