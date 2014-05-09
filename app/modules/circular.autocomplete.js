@@ -320,6 +320,12 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         suggestionListDom.removeChild(suggestionDom);
 
         suggestionListDom.addEventListener('click', function (event) {
+            var target = event.target;
+
+            if (target && target.className === 'cc-suggestion') {
+                insertSuggestion.bind(lastView)(target.textContent);
+            }
+
             event.stopPropagation();
         });
     }
@@ -343,6 +349,9 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     function updateSuggestions(data) {
         var self = this;
         var node;
+
+        lastView = this;
+
         // clear suggestions
         suggestionListDom.innerHTML = '';
 
@@ -353,9 +362,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
                     // clone suggestion dom
                     node = suggestionDom.cloneNode(true);
                     node.innerHTML = data[i];
-                    node.addEventListener('click', function (event) {
-                        insertSuggestion.bind(self)(event.target.innerHTML);
-                    });
                     // append to suggestion list
                     suggestionListDom.appendChild(node);
                 }
@@ -363,11 +369,11 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             if (suggestionListDom.children.length>0) {
                 showSuggestions.bind(self)();
             } else {
-                circular.addClass(suggestionListDom, 'is-hidden');
+                hideSuggestions();
             }
             
         } else {
-            circular.addClass(suggestionListDom, 'is-hidden');
+            hideSuggestions();
             
         }
     }
@@ -397,27 +403,13 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         var node = autofillDom.cloneNode(true);
         self.filled.push(value);
         node.querySelector('.cc-autofill-text').innerHTML = value;
-        node.querySelector('.cc-autofill-remove').addEventListener('click', function (event) {
-            // update textarea width
-            self.textarea.style.width = self.textarea.offsetWidth + node.offsetWidth + parseInt(getComputedStyle(node).marginLeft) + parseInt(getComputedStyle(node).marginRight) + 'px';
-            self.textarea.focus();
-            // remove autofill
-            self.filled.splice(self.filled.indexOf(node.querySelector('.cc-autofill-text').innerHTML), 1);
-            self.inputDom.removeChild(node);
-            if (self.textarea.value.trim()) {
-                getSuggestions.bind(self)(self.textarea.value);
-            }
-            event.stopPropagation();
-
-            console.log(self.filled);
-        });
         this.inputDom.insertBefore(node, this.textarea);
         // update textarea width
         this.textarea.style.width = this.textarea.offsetWidth - node.offsetWidth - parseInt(getComputedStyle(node).marginLeft) - parseInt(getComputedStyle(node).marginRight) + 'px';
         this.textarea.value = '';
         this.textarea.setCustomValidity('');
         this.textarea.focus();
-        circular.addClass(suggestionListDom, 'is-hidden');
+        hideSuggestions();
 
         console.log(self.filled);
     }
@@ -433,13 +425,15 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         if (self.textarea.value.trim()) {
             getSuggestions.bind(self)(self.textarea.value);
         }
+
+        console.log(self.filled);
     }
 
     function onInput(event) {
         if (this.textarea.value.trim()) {
             getSuggestions.bind(this)(this.textarea.value);
         } else {
-            circular.addClass(suggestionListDom, 'is-hidden');
+            hideSuggestions();
         }        
     }
 
@@ -509,13 +503,6 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     // submit event handler
     function onSubmit() {}
 
-    function findAncestor (el, tagName) {
-        while ((el = el.parentElement) && el.tagName !== tagName) {
-
-        }
-        return el;
-    }
-
     var View = function (options) {
         var self = this;
         // Dom caches
@@ -550,16 +537,22 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
         this.hiddenInput = this.textarea.nextElementSibling;
         this.hiddenInput.setAttribute('name', this.options.name);
 
-        this.textarea.addEventListener('input', onInput.bind(this));
-        // this.textarea.addEventListener('keypress', onKeypress.bind(this));
-        this.textarea.addEventListener('keydown', onKeydown.bind(this));
-        this.textarea.addEventListener('click', function (event) {
-            if (self.textarea.value.trim()) {
-                // update suggestion list
-                getSuggestions.bind(self)(self.textarea.value);
+        this.inputDom.addEventListener('click', function (event) {
+            var target = event.target;
+            if (target && target.className === 'cc-textarea') {
+                if (target.value.trim()) {
+                    getSuggestions.bind(self)(self.textarea.value);
+                    event.stopPropagation();
+                }
+            } else if (target && target.className === 'cc-autofill-remove') {
+                removeFilled.bind(self)(target.parentNode.parentNode);
                 event.stopPropagation();
             }
         });
+
+        this.textarea.addEventListener('input', onInput.bind(this));
+        // this.textarea.addEventListener('keypress', onKeypress.bind(this));
+        this.textarea.addEventListener('keydown', onKeydown.bind(this));
         this.textarea.addEventListener('keyup', function (event) {
             var isValid = true;
             var errMessage;
@@ -589,6 +582,12 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             this.setCustomValidity(isValid ? '' : errMessage);
 
         });
+        this.textarea.addEventListener('focus', function (event) {
+            var value = this.value.trim();
+            if (value) {
+                getSuggestions.bind(self)(value);
+            }
+        });
         this.textarea.addEventListener('blur', function (event) {
             var value = this.value.trim();
             var closestSuggestion = suggestionListDom.querySelector('.cc-suggestion') ? suggestionListDom.querySelector('.cc-suggestion').textContent : '';
@@ -614,6 +613,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
     });
 
     var initCount = 0;
+    // the current autocomplete widget a user is working on
     var lastView;
 
     autocomplete.init = function(options) {
@@ -660,7 +660,7 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
 
         document.addEventListener('click', function() {
             if (suggestionListDom) {
-                circular.addClass(suggestionListDom, 'is-hidden');
+                hideSuggestions();
             }
         });
 
@@ -670,6 +670,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             
             if (target.className === 'cc-suggestion') {
                 switch (key) {
+                    // tab
+                    case 9:
                     // enter
                     case 13:
                         insertSuggestion.bind(lastView)(target.textContent);
