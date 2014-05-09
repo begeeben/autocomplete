@@ -670,6 +670,8 @@ circular.Module('autocomplete', ['ajax', 'autocompleteSource', function (ajax, a
             
             if (target.className === 'cc-suggestion') {
                 switch (key) {
+                    // tab
+                    case 9:
                     // enter
                     case 13:
                         insertSuggestion.bind(lastView)(target.textContent);
